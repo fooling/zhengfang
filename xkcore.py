@@ -23,10 +23,12 @@ class cxcore(object):
     
     #store viewstates
     __viewstates={}
+    #while循环状态
     __state=''
+    #当前刷新次数
     __trytime=0
-
-
+    
+    #mode2 选课   mode1  查成绩
     __mode=1
 
     #class choose
@@ -184,15 +186,15 @@ class cxcore(object):
             'xx':'',
             }
 
-        print self.__info_url
+        #print "info_url is \n\n\n",self.__info_url
         tmpopener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.__cookie))
         tmpreqhandle = urllib2.Request(self.__info_url,None,self.__query_header)
-        tmpcontent='防刷'
 
+        tmpcontent = tmpopener.open(tmpreqhandle).read().decode('gb2312').encode('utf-8')
         # for kidding
         while re.findall('防刷',tmpcontent) !=[]:
             tmpcontent = tmpopener.open(tmpreqhandle).read().decode('gb2312').encode('utf-8')
-            print tmpcontent
+
         tmpViewstate = re.search('"__VIEWSTATE" value="([^"]+)"',tmpcontent)
         tmpZymc=re.findall('name="zymc"[^>]+value="([^"]+)',tmpcontent)
         tmpButton5=re.findall('name="Button5" value="([^"]+)',tmpcontent)
@@ -202,29 +204,80 @@ class cxcore(object):
         if action == 1:
             #查看可选课程
             self.__xsxk_data['Button5']=tmpButton5[0]
-        if action ==2:
-            #查看某门课程
-            self.__info_url='http://'+self.__root_host+'/'+self.__crawled[data][0]
 
         
         self.__xsxk_data = urllib.urlencode(self.__xsxk_data)
 
         tmpopener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.__cookie))
         tmpreqhandle = urllib2.Request(self.__info_url,self.__xsxk_data,self.__query_header)
-        tmpcontent = tmpopener.open(tmpreqhandle,self.__xsxk_data).read()
+        tmpcontent = tmpopener.open(tmpreqhandle).read().decode("gb2312").encode("utf-8")
 
         if action ==1:
             crawled=re.findall("window.open\('([^']+)[^\)]*[^/]+\>([^0-9]+)\</a[^a]+a[^a]+a[^a]",tmpcontent)
             self.__crawled=crawled
             order=0
-            print "课程列表"
-            for i in self.__crawled:
-                print  order,i[1].decode('gb2312').encode('utf-8')
+            self.__crawled=crawled
+            for c in crawled:
+                url,name=c
+                print  order,name
                 order+=1
+                
+            print "课程列表"
+            
             
 
         if action==0:
             self.__save('shit_zf_xsxk_local.html',tmpcontent)
+    def __choose_query(self,data):
+        #查看某门课程
+        data=int(data)
+        crawled=self.__crawled[data][0]
+        self.__info_url='http://'+self.__root_host+'/'+crawled
+        self.__query_header['Referer'] = self.__xk_referer
+        tmpopener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.__cookie))
+        tmpreqhandle = urllib2.Request(self.__info_url,None,self.__query_header)
+        tmpcontent = tmpopener.open(tmpreqhandle).read().decode("gb2312").encode("utf-8")
+        tmpregname=re.findall('jsxx[^\>]+xkkh=(\([^&]+)&[^\>]+\>(.+)\</[Aa]',tmpcontent)
+        self.__xk_viewstate=re.findall('"__VIEWSTATE" value="([^"]+)"',tmpcontent)[0]
+        #print self.__xk_viewstate
+        #print tmpregname
+        if tmpregname is []:
+            print "出错,求退出"
+        order=0
+        self.__teachers=tmpregname
+
+        for pair in tmpregname:
+            xkkh,name=pair
+            print order,xkkh,name
+            order+=1
+            
+        print "请选择想选择的老师"
+        #print self.__info_url,self.__xk_referer
+
+
+        
+    def __xsxjs_query(self,data):
+        self.__xsxjs_data = {
+            '__EVENTARGUMENT':'',
+            }
+        self.__xsxjs_data['xkkh']=data
+        
+        self.__xsxjs_data['__VIEWSTATE'] = self.__xk_viewstate
+        self.__xsxjs_data['__EVENTTARGET']='Button1'
+        self.__query_header['Referer']=self.__info_url
+
+        
+        self.__xsxjs_data = urllib.urlencode(self.__xsxjs_data)
+        #print self.__xsxjs_data,self.__query_header
+
+        tmpopener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.__cookie))
+        tmpreqhandle = urllib2.Request(self.__info_url,self.__xsxjs_data,self.__query_header)
+        tmpcontent = tmpopener.open(tmpreqhandle).read().decode("gb2312").encode("utf-8")
+        
+        msg=re.findall("alert\('([^']*)'",tmpcontent)[0]
+        print msg
+        
+
     
     def user_query(self,info):
         
@@ -283,15 +336,22 @@ class cxcore(object):
         if option==0:
             tmpregurl=re.findall('(xsxk.aspx[^"]+)',content)[0]
             self.__info_url='http://'+self.__root_host+'/'+tmpregurl+''
+            self.__xk_referer=self.__info_url
+            #self.__xk_referer=self.__xk_referer.decode("gb2312").encode("utf-8")
             self.__xsxk_query(0)
         elif option==1:
             tmpregurl=re.findall('(xsxk.aspx[^"]+)',content)[0]
             self.__info_url='http://'+self.__root_host+'/'+tmpregurl+''
+            #self.__info_url=self.__info_url.decode("utf-8").encode("gb2312")
+            self.__xk_referer=self.__info_url
             self.__xsxk_query(1)
         elif option==2:
-            self.__xsxk_query(2)
+            self.__choose_query(data)
 
-            pass           
+        elif option==3:
+            
+            data=int(data)
+            self.__xsxjs_query(self.__teachers[data][0])
             
             
             

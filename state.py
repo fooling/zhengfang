@@ -37,10 +37,26 @@ class StateMachine(object):
     def list_class(self):
         num=raw_input("请输入要选择的课程编号")
         self.userinfo.user_option(2,num)
-        return 'r'
+        return self.choose_class()
+
     def choose_class(self):
+        num=raw_input("请输入要选择的老师编号")
+        self.userinfo.user_option(3,num)
         
-        return 'r'
+        return self.redo_choose(num)
+
+    def redo_choose(self,num):
+        redo=raw_input("再刷多少次(n退出)")
+        if redo=='n':
+            return 'r'
+        try:redo=int(redo)
+        except:
+            return 'q'
+            
+        for i in range(redo):
+            self.userinfo.user_option(3,num)
+
+        return self.redo_choose(num)
         
         
 
