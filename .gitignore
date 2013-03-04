@@ -2,3 +2,5 @@
 *.pyc
 *.html
 /tmp
+*.tmp
+*.aspx

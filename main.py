@@ -2,14 +2,32 @@
 
 import getpass
 import state
-import core
+import xkcore as core
+import os
+import json
 
 flag = 'r'
 
-print '请输入你的学号'
-username = raw_input('> ')
-print '请输入你的密码'
-password = getpass.getpass('> ')
+
+if os.path.exists("userfile.tmp") == False:
+    print '请输入你的学号'
+    username = raw_input('> ')
+    print '请输入你的密码'
+    password = getpass.getpass('> ')
+    save=raw_input('是否保存(y/n)')
+    if save=='y' or save=='Y':
+        tfp=open("userfile.tmp","w")
+        data={'username':username,'password':password}
+        tfp.write(data)
+        tfp.close()
+else:
+    r=open("userfile.tmp")
+    c=r.read()
+    r.close()
+    data=json.loads(c)
+    username=data['username']
+    password=data['password']
+
 userinfo = core.cxcore(username,password)
 
 stat=state.StateMachine(userinfo)
@@ -18,7 +36,7 @@ while(flag == 'r'):
     
     print '选择你所需要的功能：'
     print '0、成绩查询  1、课表查询  2、考试查询  3、等级考试查询'
-    print '4、退出' 
+    print '4、退出  6 列出已选课程  7 列出可选课程' 
     choose = raw_input('> ')
 
     flag=stat.run(choose) 

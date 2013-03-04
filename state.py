@@ -14,13 +14,26 @@ class StateMachine(object):
             '2':self.exam,
             '3':self.level,
             '4':self.exit,
-            '5':self.execute
+            '5':self.execute,
+            '6':self.chosen,
+            '7':self.tochoose
         }
         self.userinfo=user
+        if self.userinfo.get_state()=='':
+            return self.exit()
         
 
     def run(self,init):
         return self.states.get(init,self.exit)()
+
+
+    def chosen(self):
+         self.userinfo.user_option(0)
+         return 'r'
+    def tochoose(self):
+         self.userinfo.user_option(1)
+         return 'r'
+        
 
 
     #成绩查询
@@ -131,6 +144,6 @@ class StateMachine(object):
 
 
     def execute(self):
-        self.userinfo.open()
+        pass
         
 
