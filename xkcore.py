@@ -21,6 +21,7 @@ class cxcore(object):
         '222.197.165.74'
     ]
     
+    #store viewstates
     __viewstates={}
     __state=''
     __trytime=0
@@ -175,7 +176,7 @@ class cxcore(object):
         
         self.__save(filename,tmpcontent)
 
-    def __xsxk_query(self,action=0):
+    def __xsxk_query(self,action=0,data=''):
         
         self.__xsxk_data = {
             '__EVENTTARGET':'',
@@ -201,6 +202,9 @@ class cxcore(object):
         if action == 1:
             #查看可选课程
             self.__xsxk_data['Button5']=tmpButton5[0]
+        if action ==2:
+            #查看某门课程
+            self.__info_url='http://'+self.__root_host+'/'+self.__crawled[data][0]
 
         
         self.__xsxk_data = urllib.urlencode(self.__xsxk_data)
@@ -208,8 +212,19 @@ class cxcore(object):
         tmpopener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.__cookie))
         tmpreqhandle = urllib2.Request(self.__info_url,self.__xsxk_data,self.__query_header)
         tmpcontent = tmpopener.open(tmpreqhandle,self.__xsxk_data).read()
-        
-        self.__save('shit_zf_xsxk_local.html',tmpcontent)
+
+        if action ==1:
+            crawled=re.findall("window.open\('([^']+)[^\)]*[^/]+\>([^0-9]+)\</a[^a]+a[^a]+a[^a]",tmpcontent)
+            self.__crawled=crawled
+            order=0
+            print "课程列表"
+            for i in self.__crawled:
+                print  order,i[1].decode('gb2312').encode('utf-8')
+                order+=1
+            
+
+        if action==0:
+            self.__save('shit_zf_xsxk_local.html',tmpcontent)
     
     def user_query(self,info):
         
@@ -273,10 +288,13 @@ class cxcore(object):
             tmpregurl=re.findall('(xsxk.aspx[^"]+)',content)[0]
             self.__info_url='http://'+self.__root_host+'/'+tmpregurl+''
             self.__xsxk_query(1)
+        elif option==2:
+            self.__xsxk_query(2)
+
+            pass           
             
             
             
-    
 
 
     

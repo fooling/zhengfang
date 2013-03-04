@@ -28,11 +28,20 @@ class StateMachine(object):
 
 
     def chosen(self):
-         self.userinfo.user_option(0)
-         return 'r'
+        self.userinfo.user_option(0)
+        return 'r'
     def tochoose(self):
-         self.userinfo.user_option(1)
-         return 'r'
+        self.userinfo.user_option(1)
+        return self.list_class()
+        
+    def list_class(self):
+        num=raw_input("请输入要选择的课程编号")
+        self.userinfo.user_option(2,num)
+        return 'r'
+    def choose_class(self):
+        
+        return 'r'
+        
         
 
 
