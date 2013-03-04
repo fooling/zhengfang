@@ -275,7 +275,7 @@ class cxcore(object):
         tmpcontent = tmpopener.open(tmpreqhandle).read().decode("gb2312").encode("utf-8")
         
         msg=re.findall("alert\('([^']*)'",tmpcontent)[0]
-        print msg
+        print msg,time.strftime('%Y-%m-%d-%H-%M-%S',time.localtime(time.time()))
         
 
     
