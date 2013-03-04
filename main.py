@@ -18,7 +18,8 @@ if os.path.exists("userfile.tmp") == False:
     if save=='y' or save=='Y':
         tfp=open("userfile.tmp","w")
         data={'username':username,'password':password}
-        tfp.write(data)
+        content=json.dumps(data).encode('utf-8')
+        tfp.write(content)
         tfp.close()
 else:
     r=open("userfile.tmp")
