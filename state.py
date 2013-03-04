@@ -46,12 +46,18 @@ class StateMachine(object):
         return self.redo_choose(num)
 
     def redo_choose(self,num):
-        redo=raw_input("再刷多少次(n退出)")
-        if redo=='n':
+        redo=raw_input("再刷多少次( n:退出 ,p:永恒！)")
+        if redo=='n' or redo == 'N':
+            return 'r'
+
+        if redo=='p' or redo =='P':
+            while True:
+                self.userinfo.user_option(3,num)
             return 'r'
         try:redo=int(redo)
         except:
             return 'q'
+
             
         for i in range(redo):
             self.userinfo.user_option(3,num)
