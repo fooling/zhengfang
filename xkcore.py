@@ -1,5 +1,8 @@
 #!/usr/bin/env python
-#coding=utf-8
+#-*- coding=utf-8 -*-
+
+
+#this core may only work in the period when class-choose is availiable
 
 import re
 import os

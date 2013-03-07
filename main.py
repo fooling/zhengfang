@@ -1,5 +1,8 @@
 #-*- coding=utf-8 -*-
 
+
+#main.py   -state machine version
+
 import getpass
 import state
 import xkcore as core
