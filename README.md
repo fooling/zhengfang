@@ -12,5 +12,5 @@ An easy way to login and find information at zhengfang system (for uestcer)
 
 
 
-state 分支使用core 为 xkcore.py
-非选课期间state分支无法工作请切换为内核为core.py
+使用core 为 xkcore.py
+非选课期间无法工作请切换为内核为core.py
