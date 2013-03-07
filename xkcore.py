@@ -29,7 +29,7 @@ class cxcore(object):
     __trytime=0
     
     #mode2 选课   mode1  查成绩
-    __mode=1
+    __mode=2
 
     #class choose
 
@@ -130,6 +130,7 @@ class cxcore(object):
             print "all url down"
             return False
 
+    #login viewstates to avoid 5-seconds-refreash-proof
     def __getviewstate(self,host):
         for age,viewstate in self.__viewstates[host].iteritems():
             if time.time()-age>2:
@@ -210,7 +211,10 @@ class cxcore(object):
 
         tmpopener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.__cookie))
         tmpreqhandle = urllib2.Request(self.__info_url,self.__xsxk_data,self.__query_header)
-        tmpcontent = tmpopener.open(tmpreqhandle).read().decode("gb2312").encode("utf-8")
+        if action==1:
+            tmpcontent = tmpopener.open(tmpreqhandle).read().decode("gb2312").encode("utf-8")
+        if action ==0:
+            tmpcontent = tmpopener.open(tmpreqhandle).read()
 
         if action ==1:
             crawled=re.findall("window.open\('([^']+)[^\)]*[^/]+\>([^0-9]+)\</a[^a]+a[^a]+a[^a]",tmpcontent)
@@ -280,10 +284,18 @@ class cxcore(object):
 
     
     def user_query(self,info):
-        
         self.__query_header = self.__login_header
         self.__query_header['HOST'] = self.__root_host
         self.__query_header['Referer'] = 'http://'+self.__root_host+'/xs_main_zzjk1.aspx?xh='+self.__username+'&type=1'
+
+        if self.__mode==2:
+            self.__mode=1
+            print "已切换为查询模式"
+            tmpopener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.__cookie))
+            self.__tmpcontent=tmpopener.open(self.__query_header['Referer']).read().decode('gb2312').encode('utf-8')
+            
+        
+        
 
         if(info[0] in [0,1,2]):
             
