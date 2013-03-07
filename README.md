@@ -8,4 +8,9 @@ An easy way to login and find information at zhengfang system (for uestcer)
 
 
 选课说明：
-需要选课请切换到 state_dev  分支，该分支暂不支持非选课的操作
+需要选课请切换到 state  分支
+
+
+
+state 分支使用core 为 xkcore.py
+非选课期间state分支无法工作请切换为内核为core.py
