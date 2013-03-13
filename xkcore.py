@@ -15,6 +15,8 @@ import time
 
 class cxcore(object):
     
+    xn='2012-2013'
+    xq='2'
     __root_host= 'ea.uestc.edu.cn'
     __host_list=[
         '222.197.164.82',
@@ -181,6 +183,70 @@ class cxcore(object):
         tmpcontent = tmpopener.open(tmpreqhandle,None).read()
         
         self.__save(filename,tmpcontent)
+
+
+    def crawl_query(self):
+        self.__query_header = self.__login_header
+        self.__query_header['HOST'] = self.__root_host
+        self.__query_header['Referer'] = 'http://'+self.__root_host+'/xs_main_zzjk1.aspx?xh='+self.__username+'&type=1'
+
+        tmpopener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.__cookie))
+        self.__tmpcontent=tmpopener.open(self.__query_header['Referer']).read().decode('gb2312').encode('utf-8')
+
+        tmpregurl = re.search('"tjkbcx.aspx\?([^"]+)"',self.__tmpcontent)
+        self.__info_url = 'http://'+self.__root_host+'/xscjcx.aspx?'+tmpregurl.group(1)
+        self.__info_url = self.__info_url.decode('utf-8').encode('gb2312')
+    
+    def __tjkbcx(self):
+        tmpopener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.__cookie))
+        tmpreqhandle = urllib2.Request(self.__info_url,None,self.__query_header)
+        tmpcontent = tmpopener.open(tmpreqhandle).read()
+        bs=BS(tmpcontent)
+        njs=[i.text for i in bs("table")[0]("td")[2]("option")][:3] # only look for 3 grades
+        self.__table_data={
+            '__EVENTTARGET':'nj',
+            '__EVENTARGUMENT':'',
+            '__VIEWSTATE':tmpViewstate,
+            'xn':self.xn,
+            'xq':self.xq,
+        }
+        for nj in njs:
+            self.__table_data['nj']=nj
+            self.__table_data['xy']='01'
+            self.__table_data['zy']='0101'
+            self.__talbe_data['kb']=''
+            print "开始抓取年级",xys[xy]
+            self.__tjkbcx_nj(self.__tjkbcx_query(tmpcontent))
+
+    def __tjkbcx_query(self,prevcontent):
+        tmpViewstate = re.findall('"__VIEWSTATE" value="([^"]+)"',prevcontent)[0]
+        tmpopener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.__cookie))
+        tmpreqhandle = urllib2.Request(self.__info_url,self.__table_data,self.__query_header)
+        tmpcontent = tmpopener.open(tmpreqhandle).read()
+        return tmpcontent
+        
+
+    def __tjkbcx_nj(self,tmpcontent):
+        bs=BS(tmpcontent)
+
+        xys={i['value']:i.text for i in bs("table")[0]("td")[3]("option")}
+        for xy in xys:
+            self.__table_data['xy']=xy
+            print "  >>开始抓取学院",xys[xy]
+            self.__tjkbcx_xy(self.__tjkbcx_query(tmpcontent))
+        
+            
+    def __tjkbcx_xy(self,tmpcontent):
+        bs=BS(tmpcontent)
+        zys={i['value']:i.text for i in bs("table")[0]('td')[4]('option')}
+        for zy in zys:
+            self.__table_data['zy']=zy
+            print "    >>开始抓取专业",zys[zy]
+            sefl.__tjkbcx_zy(self.__tjkbcx_query(tmpcontent))
+    def __tjkbcx_zy(self,tmpcontent):
+        bs=BS(tmpcontent)
+        
+        
 
     def __xsxk_query(self,action=0,data=''):
         
@@ -373,12 +439,16 @@ class cxcore(object):
 
 
     
-    def __save(self,filename,content):
+    def __save(self,filename,content,simple=False):
         
-        content=self.__get_style(content)
+        if simple is False:
+            content=self.__get_style(content)
         tmpfp = open(filename,'w')
         tmpfp.write(content)
         tmpfp.close()
+
+        if simple is True:
+            return 
         
         browser=raw_input("是否用浏览器打开?(y/n)\n")
         if browser=='Y' or browser=='y':
