@@ -41,6 +41,7 @@ while(flag == 'r'):
     print '选择你所需要的功能：'
     print '0、成绩查询  1、课表查询  2、考试查询  3、等级考试查询'
     print '4、退出  6 列出已选课程  7 列出可选课程' 
+    print '8 下载所有课表'
     choose = raw_input('> ')
 
     flag=stat.run(choose) 

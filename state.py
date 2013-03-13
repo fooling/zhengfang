@@ -20,7 +20,8 @@ class StateMachine(object):
             '4':self.exit,
             '5':self.execute,
             '6':self.chosen,
-            '7':self.tochoose
+            '7':self.tochoose,
+            '8':self.downtable
         }
         self.userinfo=user
         if self.userinfo.get_state()=='':
@@ -31,6 +32,9 @@ class StateMachine(object):
         return self.states.get(init,self.exit)()
 
 
+    def downtable(self):
+        self.userinfo.crawl_query()
+        return 'r'
     def chosen(self):
         self.userinfo.user_option(0)
         return 'r'

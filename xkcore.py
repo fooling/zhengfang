@@ -12,6 +12,7 @@ import cookielib
 import webbrowser
 import random
 import time
+from BeautifulSoup import BeautifulSoup as BS
 
 class cxcore(object):
     
@@ -194,19 +195,22 @@ class cxcore(object):
         self.__tmpcontent=tmpopener.open(self.__query_header['Referer']).read().decode('gb2312').encode('utf-8')
 
         tmpregurl = re.search('"tjkbcx.aspx\?([^"]+)"',self.__tmpcontent)
-        self.__info_url = 'http://'+self.__root_host+'/xscjcx.aspx?'+tmpregurl.group(1)
+        self.__info_url = 'http://'+self.__root_host+'/tjkbcx.aspx?'+tmpregurl.group(1)
         self.__info_url = self.__info_url.decode('utf-8').encode('gb2312')
+        self.__tjkbcx()
     
     def __tjkbcx(self):
         tmpopener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.__cookie))
         tmpreqhandle = urllib2.Request(self.__info_url,None,self.__query_header)
         tmpcontent = tmpopener.open(tmpreqhandle).read()
         bs=BS(tmpcontent)
+        #self.__save("kb.html",unicode(bs).encode('utf-8'),True)
+        #return
+        #print bs
         njs=[i.text for i in bs("table")[0]("td")[2]("option")][:3] # only look for 3 grades
         self.__table_data={
             '__EVENTTARGET':'nj',
             '__EVENTARGUMENT':'',
-            '__VIEWSTATE':tmpViewstate,
             'xn':self.xn,
             'xq':self.xq,
         }
@@ -214,14 +218,16 @@ class cxcore(object):
             self.__table_data['nj']=nj
             self.__table_data['xy']='01'
             self.__table_data['zy']='0101'
-            self.__talbe_data['kb']=''
-            print "开始抓取年级",xys[xy]
+            self.__table_data['kb']=''
+            self.__table_data['__EVENTTARGET']='nj'
+            print "开始抓取年级",nj
             self.__tjkbcx_nj(self.__tjkbcx_query(tmpcontent))
 
     def __tjkbcx_query(self,prevcontent):
         tmpViewstate = re.findall('"__VIEWSTATE" value="([^"]+)"',prevcontent)[0]
+        self.__table_data['__VIEWSTATE']=tmpViewstate
         tmpopener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.__cookie))
-        tmpreqhandle = urllib2.Request(self.__info_url,self.__table_data,self.__query_header)
+        tmpreqhandle = urllib2.Request(self.__info_url,urllib.urlencode(self.__table_data),self.__query_header)
         tmpcontent = tmpopener.open(tmpreqhandle).read()
         return tmpcontent
         
@@ -232,6 +238,7 @@ class cxcore(object):
         xys={i['value']:i.text for i in bs("table")[0]("td")[3]("option")}
         for xy in xys:
             self.__table_data['xy']=xy
+            self.__table_data['__EVENTTARGET']='xy'
             print "  >>开始抓取学院",xys[xy]
             self.__tjkbcx_xy(self.__tjkbcx_query(tmpcontent))
         
@@ -241,10 +248,27 @@ class cxcore(object):
         zys={i['value']:i.text for i in bs("table")[0]('td')[4]('option')}
         for zy in zys:
             self.__table_data['zy']=zy
+            self.__table_data['__EVENTTARGET']='zy'
             print "    >>开始抓取专业",zys[zy]
-            sefl.__tjkbcx_zy(self.__tjkbcx_query(tmpcontent))
+            self.__tjkbcx_zy(self.__tjkbcx_query(tmpcontent))
     def __tjkbcx_zy(self,tmpcontent):
         bs=BS(tmpcontent)
+        kbs={i['value']:i.text for i in bs("table")[0]('td')[5]('option')}
+        for kb in kbs:
+            if len(kb) is not 0:
+                self.__table_data['kb']=kb
+                self.__table_data['__EVENTTARGET']='kb'
+                print "      >>开始抓取班级",kbs[kb]
+                self.__tjkbcx_kb(self.__tjkbcx_query(tmpcontent))
+
+    def __tjkbcx_kb(self,tmpcontent):
+        bs=BS(tmpcontent,fromEncoding="gb18030")
+        tmptable=bs('table')[1]
+        tablename=self.__table_data['nj']+'_'+self.__table_data['xy']+'_'+self.__table_data['zy']+'_'+self.__table_data['kb']+'.html'
+        strtable="%s" % tmptable
+        self.__save(tablename,strtable,True)
+        
+
         
         
 
