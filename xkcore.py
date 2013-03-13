@@ -240,6 +240,7 @@ class cxcore(object):
             self.__table_data['xy']=xy
             self.__table_data['__EVENTTARGET']='xy'
             print "  >>开始抓取学院",xys[xy]
+            self.__xy=xys[xy]
             self.__tjkbcx_xy(self.__tjkbcx_query(tmpcontent))
         
             
@@ -250,6 +251,7 @@ class cxcore(object):
             self.__table_data['zy']=zy
             self.__table_data['__EVENTTARGET']='zy'
             print "    >>开始抓取专业",zys[zy]
+            self.__zy=zys[zy]
             self.__tjkbcx_zy(self.__tjkbcx_query(tmpcontent))
     def __tjkbcx_zy(self,tmpcontent):
         bs=BS(tmpcontent)
@@ -264,7 +266,7 @@ class cxcore(object):
     def __tjkbcx_kb(self,tmpcontent):
         bs=BS(tmpcontent,fromEncoding="gb18030")
         tmptable=bs('table')[1]
-        tablename=self.__table_data['nj']+'_'+self.__table_data['xy']+'_'+self.__table_data['zy']+'_'+self.__table_data['kb']+'.html'
+        tablename=self.__table_data['nj']+'_'+self.__table_data['xy']+'_'+self.__table_data['zy']+'_'+self.__table_data['kb']+'_'+self.__xy+'_'+self.__zy+'.html'
         strtable="%s" % tmptable
         self.__save(tablename,strtable,True)
         
