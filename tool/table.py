@@ -1,4 +1,4 @@
-#-*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 
 
 from BeautifulSoup import BeautifulSoup as BS
@@ -6,7 +6,57 @@ from BeautifulSoup import BeautifulSoup as BS
 import os
 import re
 from collections import defaultdict
-from MySQLdb
+import MySQLdb
+import getpass
+import json
+
+class Database(object):
+    def __init__(self):
+        if os.path.exists('config.tmp') is False:
+            user= raw_input('database user > ')
+            host= raw_input('database host > ')
+            passwd=getpass.getpass('database password > ')
+            with open('config.tmp','w') as config:
+                config.write(json.dumps([user,host,passwd])) 
+        else: 
+            user,host,passwd=self.__get_ident()
+
+        
+        self.__conn=MySQLdb.connect(host=host,user=user,passwd=passwd,charset='utf8')
+        self.__conn.select_db('class')
+        self.__cursor=self.__conn.cursor()
+                
+    def __get_ident(self):
+        with open('config.tmp') as config:
+            return [content for content in json.loads(config.read())]
+
+    def insert(self,data):
+        q="insert into `main` "
+        keys=[]
+        values=[]
+        for key,value in data.items():
+            keys.append('`'+key+'`')
+            try:
+                values.append('"%s"' % value)
+            except:
+                try:
+                    values.append('"%d"' % value )
+                except:
+                    pass 
+        q+='('+','.join(keys)+')'+' values '+'('+','.join(values)+');'
+        #with open("tmpquery.sql",'w') as que:
+        #    que.write(q)
+        return self.__only_query(q)
+        
+    def __only_query(self,q):
+        self.__cursor.execute(q)
+        return self.__conn.commit()
+        
+
+    def __query(self,q):
+        res=self.__cursor.execute(q)
+        return self.__cursor.fetchall()
+
 
 class Table(object):
     
@@ -14,8 +64,10 @@ class Table(object):
     row_parse={ 2:1, 3:2, 4:3, 5:4, 6:5, 7:6, 8:7, 9:8, 10:9, 11:10, 12:11, 13:12 }
     col_parse={ 2:1, 3:2, 4:3, 5:4, 6:5, 7:6, 8:7 }
 
-    def __init__(self,table):
+    def __init__(self,table,info):
         self.__table=table
+        self.__info=info
+        #print info
         pass
 
     def run(self):
@@ -44,9 +96,6 @@ class Table(object):
         self.__matrix=matrix
 
 
-    def travel(self):
-        for i in self.__matrix:
-            print i
                 
             
 
@@ -67,26 +116,41 @@ class Table(object):
         
         
         if grid=="&nbsp;":
-            print "Nothing"
+            #print "Nothing"
             return 
             
         for oneclass in grid.split("<br /><br /><br />"):
-            print "\n"
             try:
                 one={}
                 classinfo=oneclass.split("<br />")
                 one['name']=classinfo[0]
                 tmptime=classinfo[1]
                 one['teacher']=classinfo[2]
-                one['room']=classinfo[3]
-                one['timeinfo']=self.__parse_time(tmptime)
+                one['classroom']=classinfo[3]
+                timeinfo=self.__parse_time(tmptime)
+                one['week_start']=timeinfo['period'][0]
+                one['week_end']=timeinfo['period'][1]
+                one['step_type']=timeinfo['freq']
+                one['num_perweek']=timeinfo['num']
                 classes.append(one)
             except:
                 pass
 
-        print week,seq
-        print classes
-            
+        for one in classes:
+            one['weekday_num']=week
+            one['lesson_num']=seq
+            one['level']=self.__info[0]
+            one['collegeid']=self.__info[1]
+            one['majorid']=self.__info[2]
+            one['kbid']=self.__info[3]
+            one['college']=self.__info[4]
+            one['major']=self.__info[5]
+            one['year']='2012-2013'
+            one['semester']='2'
+        db=Database()
+        for i in classes:
+            print db.insert(i)
+
 
     def __parse_time(self,timeinfo):
         _time={}
@@ -112,28 +176,20 @@ def get_all():
         with open ('tables/'+f) as tmp:
             print f
             data=tmp.read()
-        yield data
+            info = f.split('.')[0].split('_')
+        yield (data,info)
 
 
 
 
 tmp=''
-time=6
 gen=iter(get_all())
-for i in xrange(time):
-    tmp=gen.next()
-
-
-t=Table(tmp)
-
-t.run()
-
-while True:
-    pair=raw_input("input > ")
-    x,y= pair.split(' ')
-    x=int(x)
-    y=int(y)
-    print x,y
+for i in gen:
+    tmp,tmpinfo=gen.next()
+    t=Table(tmp,tmpinfo)
+    t.run()
     t.all_grid()
-    t.look(x,y)
+
+
+
     
