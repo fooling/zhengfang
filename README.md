@@ -1,16 +1,22 @@
-shit_uestc_zfsystem
+Zhengfang system of UESTC
 ===================
 
-An easy way to login and find information at zhengfang system (for uestcer)
+An easy way to login and find information at zhengfang system (for UESTCer)
 
 
 
 
 
-选课说明：
-需要选课请切换到 state  分支
+
+目前具有功能
+===================
+
+#刷选课
+
+#查成绩
+
+#查课表
+
+#爆课表
 
 
-
-使用core 为 xkcore.py
-非选课期间无法工作请切换为内核为core.py
