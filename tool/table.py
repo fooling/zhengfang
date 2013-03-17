@@ -30,8 +30,30 @@ class Database(object):
         with open('config.tmp') as config:
             return [content for content in json.loads(config.read())]
 
-    def insert(self,data):
-        q="insert into `main` "
+    def select(self,data,table):
+        q="select id,"
+        keys=[]
+        values=[]
+        pairs=[]
+        for key,value in data.items():
+            key='`%s`' % key
+            try:
+                value='"%s"' % value
+            except:
+                try:
+                    value='"%d"' % value
+                except:
+                    pass 
+            keys.append(key)
+            values.append(value)
+            pairs.append(key+'='+value)
+
+        q+=','.join(keys)+' from '+table+' where '+' and '.join(pairs)
+        return self.__select_query(q)
+        
+            
+    def insert(self,data,table):
+        q="insert into `%s` "% table
         keys=[]
         values=[]
         for key,value in data.items():
@@ -46,14 +68,15 @@ class Database(object):
         q+='('+','.join(keys)+')'+' values '+'('+','.join(values)+');'
         #with open("tmpquery.sql",'w') as que:
         #    que.write(q)
-        return self.__only_query(q)
+        return self.__insert_query(q)
         
-    def __only_query(self,q):
+    def __insert_query(self,q):
         self.__cursor.execute(q)
-        return self.__conn.commit()
+        self.__conn.commit()
+        return self.__cursor.lastrowid
         
 
-    def __query(self,q):
+    def __select_query(self,q):
         res=self.__cursor.execute(q)
         return self.__cursor.fetchall()
 
@@ -113,6 +136,7 @@ class Table(object):
         week=self.col_parse[col]
         seq=self.row_parse[row]
         classes=[]
+        schedules=[]
         
         
         if grid=="&nbsp;":
@@ -122,34 +146,51 @@ class Table(object):
         for oneclass in grid.split("<br /><br /><br />"):
             try:
                 one={}
+                two={}
                 classinfo=oneclass.split("<br />")
                 one['name']=classinfo[0]
                 tmptime=classinfo[1]
                 one['teacher']=classinfo[2]
-                one['classroom']=classinfo[3]
                 timeinfo=self.__parse_time(tmptime)
                 one['week_start']=timeinfo['period'][0]
                 one['week_end']=timeinfo['period'][1]
-                one['step_type']=timeinfo['freq']
                 one['num_perweek']=timeinfo['num']
+
+                two['step_type']=timeinfo['freq']
+                two['classroom']=classinfo[3]
                 classes.append(one)
+                schedules.append(two)
             except:
                 pass
 
         for one in classes:
-            one['weekday_num']=week
-            one['lesson_num']=seq
             one['level']=self.__info[0]
             one['collegeid']=self.__info[1]
             one['majorid']=self.__info[2]
-            one['kbid']=self.__info[3]
             one['college']=self.__info[4]
             one['major']=self.__info[5]
             one['year']='2012-2013'
             one['semester']='2'
         db=Database()
+        sche_gen=self.__yield_schedule(schedules)
         for i in classes:
-            print db.insert(i)
+            findout=db.select(i,'main')
+            if findout==():
+                tid=db.insert(i,'main')
+            else:
+                tid=findout[0][0]
+
+            db.insert({'tid':tid,'idinfo':self.__info[3]},'classes')
+            schedule={'tid':tid,'weekday_num':week,'lesson_num':seq}
+            schedule.update(sche_gen.next())
+            db.insert(schedule,'schedules')
+
+    def __yield_schedule(self,schedules):
+        for schedule in schedules:
+            yield schedule
+    
+    
+            
 
 
     def __parse_time(self,timeinfo):
