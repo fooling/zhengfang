@@ -24,7 +24,8 @@ class cxcore(object):
         '222.197.164.244',
         '222.197.165.148',
         '222.197.165.209',
-        '222.197.165.74'
+        '222.197.165.74',
+        'ea.uestc.edu.cn'
     ]
     
     #store viewstates
@@ -78,6 +79,7 @@ class cxcore(object):
                     response=urllib2.urlopen(host+"/default_ldap.aspx",timeout=1).read().decode("gb2312").encode('utf-8')
                     #print "response",response
                 except:
+                    print "urlopen fail"
                     continue
 
                 try:

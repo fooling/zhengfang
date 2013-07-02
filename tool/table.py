@@ -165,10 +165,6 @@ class Table(object):
 
         for one in classes:
             one['level']=self.__info[0]
-            one['collegeid']=self.__info[1]
-            one['majorid']=self.__info[2]
-            one['college']=self.__info[4]
-            one['major']=self.__info[5]
             one['year']='2012-2013'
             one['semester']='2'
         db=Database()
@@ -180,10 +176,11 @@ class Table(object):
             else:
                 tid=findout[0][0]
 
-            db.insert({'tid':tid,'idinfo':self.__info[3]},'classes')
+            db.insert({'tid':tid,'idinfo':self.__info[3],'collegeid':self.__info[1],'majorid':self.__info[2],'college':self.__info[4],'major':self.__info[5]},'classes')
             schedule={'tid':tid,'weekday_num':week,'lesson_num':seq}
             schedule.update(sche_gen.next())
-            db.insert(schedule,'schedules')
+            if db.select(schedule,'schedules') ==():
+                db.insert(schedule,'schedules')
 
     def __yield_schedule(self,schedules):
         for schedule in schedules:
