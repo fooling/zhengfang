@@ -209,7 +209,7 @@ class cxcore(object):
         #self.__save("kb.html",unicode(bs).encode('utf-8'),True)
         #return
         #print bs
-        njs=[i.text for i in bs("table")[0]("td")[2]("option")][:3] # only look for 3 grades
+        njs=[i.text for i in bs("table")[0]("td")[2]("option")][:4] # only look for 4 grades
         self.__table_data={
             '__EVENTTARGET':'nj',
             '__EVENTARGUMENT':'',

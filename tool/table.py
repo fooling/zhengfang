@@ -165,8 +165,8 @@ class Table(object):
 
         for one in classes:
             one['level']=self.__info[0]
-            one['year']='2012-2013'
-            one['semester']='2'
+            one['year']='2013-2014'
+            one['semester']='1'
         db=Database()
         sche_gen=self.__yield_schedule(schedules)
         for i in classes:
