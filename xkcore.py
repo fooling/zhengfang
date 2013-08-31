@@ -12,7 +12,7 @@ import cookielib
 import webbrowser
 import random
 import time
-from BeautifulSoup import BeautifulSoup as BS
+from bs4 import BeautifulSoup as BS
 
 class cxcore(object):
     
