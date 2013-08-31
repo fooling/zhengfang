@@ -16,8 +16,8 @@ from BeautifulSoup import BeautifulSoup as BS
 
 class cxcore(object):
     
-    xn='2012-2013'
-    xq='2'
+    xn='2013-2014'
+    xq='1'
     __root_host= 'ea.uestc.edu.cn'
     __host_list=[
         '222.197.164.82',
